@@ -1,0 +1,9 @@
+# Ctags
+tags
+
+# so
+*.so
+
+# object
+
+*.o
