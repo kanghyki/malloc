@@ -8,15 +8,6 @@ NAME = libft_malloc.so
 SYM_NAME = libft_malloc_$(HOSTTYPE).so
 
 # **************************************************
-# * TEST                                           *
-# **************************************************
-TEST_NAME = run_test
-TEST_SRC_PATH = ./test
-TEST_SRC = main.c
-TEST_SRCS = $(addprefix $(TEST_SRC_PATH)/, $(TEST_SRC))
-TEST_OBJS = $(TEST_SRCS:.c=.o)
-
-# **************************************************
 # * SOURCE/INCLUDE                                 *
 # **************************************************
 INC_PATH = ./inc
@@ -27,6 +18,15 @@ SRC = malloc.c\
 			debug.c
 SRCS = $(addprefix $(SRC_PATH)/, $(SRC))
 OBJS = $(SRCS:.c=.o)
+
+# **************************************************
+# * TEST                                           *
+# **************************************************
+TEST_NAME = run_test
+TEST_SRC_PATH = ./test
+TEST_SRC = main.c
+TEST_SRCS = $(addprefix $(TEST_SRC_PATH)/, $(TEST_SRC))
+TEST_OBJS = $(TEST_SRCS:.c=.o)
 
 # **************************************************
 # * LIBRARY                                        *
@@ -80,12 +80,12 @@ test:
 	@make $(NAME)
 	@make $(TEST_NAME)
 
-tclean:
-	rm -f $(TEST_OBJS) $(TEST_NAME)
-
 $(TEST_NAME): LDFLAGS := -lft_malloc -L./
 $(TEST_NAME): $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(TEST_OBJS) -o $(TEST_NAME)
+
+tclean:
+	rm -f $(TEST_OBJS) $(TEST_NAME)
 
 # **************************************************
 # * PHONY                                          *
