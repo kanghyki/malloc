@@ -42,56 +42,52 @@ LIBFT_INC		=	$(LIBFT_PATH)/inc
 # * VARIABLE                                       *
 # **************************************************
 CC = gcc
-
 CFLAGS = -Wall -Wextra -Werror
-$(NAME): CFLAGS := -shared -fPIC
-$(SRC_PATH)/%.o: CFLAGS := -Wall -Wextra -Werror
-$(TEST_SRC_PATH)/%.o: CFLAGS := -Wall -Wextra -Werror
-
 CPPFLAGS = -I $(INC_PATH)
-
 LDFLAGS = -lft -L$(LIBFT_PATH)
-test: LDFLAGS := -lft_malloc -L./
 
 # **************************************************
 # * RULE                                           *
 # **************************************************
 all: $(NAME)
 
+$(SRC_PATH)/%.o: CFLAGS := -Wall -Wextra -Werror
+$(TEST_SRC_PATH)/%.o: CFLAGS := -Wall -Wextra -Werror
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
+$(NAME): CFLAGS := -shared -fPIC
 $(NAME): $(OBJS) $(LIBFT_NAME)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME)
 	ln -sf $(NAME) $(SYM_NAME)
 
 clean:
 	rm -f $(OBJS)
-	make -C $(LIBFT_PATH) clean
+	@make -C $(LIBFT_PATH) clean
 
 fclean: clean
 	rm -f $(NAME) $(SYM_NAME)
-	make -C $(LIBFT_PATH) fclean
+	@make -C $(LIBFT_PATH) fclean
 
 re:
-	make fclean
-	make all
+	@make fclean
+	@make all
 
 $(LIBFT_NAME):
-	make bonus -C $(LIBFT_PATH)
+	@make -C $(LIBFT_PATH)
 
-test: $(NAME) $(TEST_OBJS)
+test:
+	@make $(NAME)
+	@make $(TEST_NAME)
+
+tclean:
+	rm -f $(TEST_OBJS) $(TEST_NAME)
+
+$(TEST_NAME): LDFLAGS := -lft_malloc -L./
+$(TEST_NAME): $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(TEST_OBJS) -o $(TEST_NAME)
-	@echo "+--------------------------------------------------+\n\
-| RUN TEST                                         |\n\
-+--------------------------------------------------+"
-	@./$(TEST_NAME)
-	@echo "+--------------------------------------------------+"
-	rm -f $(TEST_OBJS)
-	rm -f $(TEST_NAME)
-
 
 # **************************************************
 # * PHONY                                          *
 # **************************************************
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test tclean
