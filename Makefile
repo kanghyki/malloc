@@ -1,11 +1,12 @@
 # **************************************************
 # * TARGET NAME                                    *
 # **************************************************
+LIB_NAME = ft_malloc
 ifeq ($(HOSTTYPE),)
 	HOSTTYPE := $(shell uname -m)_$(shell uname -s)
 endif
-NAME = libft_malloc.so
-SYM_NAME = libft_malloc_$(HOSTTYPE).so
+NAME = lib$(LIB_NAME).so
+SYM_NAME = lib$(LIB_NAME)_$(HOSTTYPE).so
 
 # **************************************************
 # * SOURCE/INCLUDE                                 *
@@ -34,9 +35,10 @@ TEST_OBJS = $(TEST_SRCS:.c=.o)
 LIBRARY_PATH = ./lib
 
 # [ LIBFT ]
+LIBFT_LIB_NAME = ft
 LIBFT_PATH = $(LIBRARY_PATH)/libft
-LIBFT_NAME = $(LIBFT_PATH)/libft.a
-LIBFT_INC		=	$(LIBFT_PATH)/inc
+LIBFT_NAME = $(LIBFT_PATH)/lib$(LIBFT_LIB_NAME).a
+LIBFT_INC = $(LIBFT_PATH)/inc
 
 # **************************************************
 # * VARIABLE                                       *
@@ -44,7 +46,7 @@ LIBFT_INC		=	$(LIBFT_PATH)/inc
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -I $(INC_PATH)
-LDFLAGS = -lft -L$(LIBFT_PATH)
+LDFLAGS = -l$(LIBFT_LIB_NAME) -L$(LIBFT_PATH)
 
 # **************************************************
 # * RULE                                           *
@@ -63,10 +65,12 @@ $(NAME): $(OBJS) $(LIBFT_NAME)
 
 clean:
 	rm -f $(OBJS)
+	rm -f $(TEST_OBJS)
 	@make -C $(LIBFT_PATH) clean
 
 fclean: clean
 	rm -f $(NAME) $(SYM_NAME)
+	rm -f $(TEST_NAME)
 	@make -C $(LIBFT_PATH) fclean
 
 re:
@@ -80,14 +84,11 @@ test:
 	@make $(NAME)
 	@make $(TEST_NAME)
 
-$(TEST_NAME): LDFLAGS := -lft_malloc -L./
+$(TEST_NAME): LDFLAGS := -l$(LIB_NAME) -L./
 $(TEST_NAME): $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(TEST_OBJS) -o $(TEST_NAME)
-
-tclean:
-	rm -f $(TEST_OBJS) $(TEST_NAME)
 
 # **************************************************
 # * PHONY                                          *
 # **************************************************
-.PHONY: all clean fclean re test tclean
+.PHONY: all clean fclean re test
