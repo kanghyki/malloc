@@ -11,23 +11,11 @@ SYM_NAME := lib$(LIB_NAME)_$(HOSTTYPE).so
 # **************************************************
 # * SOURCE/INCLUDE                                 *
 # **************************************************
-INC_PATH := ./inc
-SRC_PATH := ./src
-SRC := malloc.c\
-			realloc.c\
-			free.c\
-			debug.c
-SRCS := $(addprefix $(SRC_PATH)/, $(SRC))
+INC_PATHS := ./inc \
+						 ./inc/implementation
+SRC := malloc.c
+SRCS := $(addprefix src/, $(SRC))
 OBJS := $(SRCS:.c=.o)
-
-# **************************************************
-# * TEST                                           *
-# **************************************************
-TEST_NAME := run_test
-TEST_SRC_PATH := ./test
-TEST_SRC := main.c
-TEST_SRCS := $(addprefix $(TEST_SRC_PATH)/, $(TEST_SRC))
-TEST_OBJS := $(TEST_SRCS:.c=.o)
 
 # **************************************************
 # * LIBRARY                                        *
@@ -38,67 +26,101 @@ LIBRARY_PATH := ./lib
 LIBFT_LIB_NAME := ft
 LIBFT_PATH := $(LIBRARY_PATH)/libft
 LIBFT_NAME := $(LIBFT_PATH)/lib$(LIBFT_LIB_NAME).a
-LIBFT_INC := $(LIBFT_PATH)/inc
+LIBFT_INC_PATH := $(LIBFT_PATH)/inc
+
+# [ FT_PRINTF ]
+FT_PRINTF_LIB_NAME := ftprintf
+FT_PRINTF_PATH := $(LIBRARY_PATH)/ft_printf
+FT_PRINTF_NAME := $(LIBFT_PATH)/lib$(FT_PRINTF_LIB_NAME).a
+FT_PRINTF_INC_PATH := $(LIBFT_PATH)/inc
+
+LIBRARY_NAMES := $(LIBFT_LIB_NAME) \
+								 $(FT_PRINTF_LIB_NAME)
+LIBRARY_PATHS := $(LIBFT_PATH) \
+								 $(FT_PRINTF_PATH)
+LIBRARY_INC_PATHS := $(LIBFT_INC_PATH) \
+										 $(FT_PRINTF_INC_PATH)
 
 # **************************************************
 # * VARIABLE                                       *
 # **************************************************
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror
-%.o: CFLAGS := -Wall -Wextra -Werror
-%.so: CFLAGS := -shared -fPIC
-CPPFLAGS := -I $(INC_PATH)
-LDFLAGS := -l$(LIBFT_LIB_NAME) -L$(LIBFT_PATH)
-$(TEST_NAME): LDFLAGS := -l$(LIB_NAME) -L./
+%.so: CFLAGS += -shared -fPIC
+CPPFLAGS := $(addprefix -I, $(LIBRARY_INC_PATHS)) \
+						$(addprefix -I, $(INC_PATHS))
+LDFLAGS := $(addprefix -l, $(LIBRARY_NAMES)) \
+					 $(addprefix -L, $(LIBRARY_PATHS))
 
 # **************************************************
 # * RULE                                           *
 # **************************************************
-all: $(NAME)
-.PHONY: all
+all: $(OBJS)
+	@make $(NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(NAME): $(OBJS) $(LIBFT_NAME)
+$(NAME): $(LIBFT_NAME) $(FT_PRINTF_NAME)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME)
 	ln -sf $(NAME) $(SYM_NAME)
 
 clean:
 	rm -f $(OBJS)
 	@make -C $(LIBFT_PATH) clean
-.PHONY: clean
+	@make -C $(FT_PRINTF_PATH) clean
 
 fclean: clean
 	rm -f $(NAME) $(SYM_NAME)
 	@make -C $(LIBFT_PATH) fclean
-.PHONY: fclean
+	@make -C $(FT_PRINTF_PATH) fclean
 
 re:
 	@make fclean
 	@make all
-.PHONY: re
 
 $(LIBFT_NAME):
 	@make -C $(LIBFT_PATH)
 
-test:
-	@make $(NAME)
-	@make $(TEST_NAME)
-.PHONY: test
+$(FT_PRINTF_NAME):
+	@make -C $(FT_PRINTF_PATH)
 
+# **************************************************
+# * PHONY                                          *
+# **************************************************
+.PHONY: all clean fclean re
+
+# **************************************************
+# * TEST SOURCE/INCLUDE                            *
+# **************************************************
+TEST_NAME := run_test
+TEST_SRC_PATH := ./test
+TEST_SRC := main.c
+TEST_SRCS := $(addprefix $(TEST_SRC_PATH)/, $(TEST_SRC))
+TEST_OBJS := $(TEST_SRCS:.c=.o)
+
+# **************************************************
+# * TEST RULE                                      *
+# **************************************************
+test:
+	@make all
+	@make $(TEST_NAME)
+
+$(TEST_NAME): LDFLAGS := -l$(LIB_NAME) -L./
 $(TEST_NAME): $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(TEST_OBJS) -o $(TEST_NAME)
 
 test/clean:
 	rm -f $(TEST_OBJS)
-.PHONY: test/clean
 
 test/fclean: test/clean
 	rm -f $(TEST_NAME)
-.PHONY: test/fclean
 
 test/re:
 	@make test/fclean
 	@make test
-.PHONY: test/re
+
+# **************************************************
+# * TEST PHONY                                     *
+# **************************************************
+.PHONY: test test/clean test/fclean test/re
