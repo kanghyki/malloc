@@ -13,8 +13,9 @@ SYM_NAME := lib$(LIB_NAME)_$(HOSTTYPE).so
 # **************************************************
 INC_PATHS := ./inc \
 						 ./inc/implementation
+SRC_PATH := ./src
 SRC := malloc.c
-SRCS := $(addprefix src/, $(SRC))
+SRCS := $(addprefix $(SRC_PATH)/, $(SRC))
 OBJS := $(SRCS:.c=.o)
 
 # **************************************************
@@ -31,8 +32,8 @@ LIBFT_INC_PATH := $(LIBFT_PATH)/inc
 # [ FT_PRINTF ]
 FT_PRINTF_LIB_NAME := ftprintf
 FT_PRINTF_PATH := $(LIBRARY_PATH)/ft_printf
-FT_PRINTF_NAME := $(LIBFT_PATH)/lib$(FT_PRINTF_LIB_NAME).a
-FT_PRINTF_INC_PATH := $(LIBFT_PATH)/inc
+FT_PRINTF_NAME := $(FT_PRINTF_PATH)/lib$(FT_PRINTF_LIB_NAME).a
+FT_PRINTF_INC_PATH := $(FT_PRINTF_PATH)/inc
 
 LIBRARY_NAMES := $(LIBFT_LIB_NAME) \
 								 $(FT_PRINTF_LIB_NAME)
@@ -45,8 +46,8 @@ LIBRARY_INC_PATHS := $(LIBFT_INC_PATH) \
 # * VARIABLE                                       *
 # **************************************************
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror
-%.so: CFLAGS += -shared -fPIC
+%.o: CFLAGS := -Wall -Wextra -Werror
+%.so: CFLAGS := -shared -fPIC
 CPPFLAGS := $(addprefix -I, $(LIBRARY_INC_PATHS)) \
 						$(addprefix -I, $(INC_PATHS))
 LDFLAGS := $(addprefix -l, $(LIBRARY_NAMES)) \
@@ -55,13 +56,12 @@ LDFLAGS := $(addprefix -l, $(LIBRARY_NAMES)) \
 # **************************************************
 # * RULE                                           *
 # **************************************************
-all: $(OBJS)
-	@make $(NAME)
+all: $(NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(NAME): $(LIBFT_NAME) $(FT_PRINTF_NAME)
+$(NAME): $(OBJS) $(LIBFT_NAME) $(FT_PRINTF_NAME)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME)
 	ln -sf $(NAME) $(SYM_NAME)
 
@@ -102,13 +102,10 @@ TEST_OBJS := $(TEST_SRCS:.c=.o)
 # **************************************************
 # * TEST RULE                                      *
 # **************************************************
-test:
-	@make all
-	@make $(TEST_NAME)
+test: $(TEST_NAME)
 
-$(TEST_NAME): LDFLAGS := -l$(LIB_NAME) -L./
-$(TEST_NAME): $(TEST_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(TEST_OBJS) -o $(TEST_NAME)
+$(TEST_NAME): $(TEST_OBJS) $(NAME)
+	$(CC) -l$(LIB_NAME) -L./ $(TEST_OBJS) -o $(TEST_NAME)
 
 test/clean:
 	rm -f $(TEST_OBJS)
